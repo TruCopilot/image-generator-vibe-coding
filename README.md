@@ -85,6 +85,8 @@ Provider is auto-detected from available env vars (OpenRouter preferred). You ca
 | Nano Banana (flash) | `google/gemini-2.5-flash-image` | `gemini-2.5-flash-image` | Fast, high-volume generation |
 | Nano Banana Pro | `google/gemini-3-pro-image-preview` | `gemini-3-pro-image-preview` | High quality output |
 
+> **Browse all image models:** [OpenRouter Image Models](https://openrouter.ai/models?fmt=cards&input_modalities=text&output_modalities=image) — any model ID from this page works with the `model` parameter.
+
 ## Setup
 
 ### 1. Get an API Key
