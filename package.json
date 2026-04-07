@@ -29,7 +29,7 @@
     "cursor",
     "windsurf"
   ],
-  "author": "khoaofgod",
+  "author": "TruCopilot (https://trucopilot.com)",
   "license": "MIT",
   "dependencies": {
     "@google/genai": "^1.0.0",

@@ -11,7 +11,7 @@ Copy the prompt below, replace the **two placeholders**, and paste it into Claud
 > **Before you paste:** Get your OpenRouter API key at [openrouter.ai/keys](https://openrouter.ai/keys)
 
 <pre>
-Fetch this doc: https://github.com/khoaofgod/image-generator-vibe-coding and install the
+Fetch this doc: https://github.com/TruCopilot/image-generator-vibe-coding and install the
 image-generator MCP server for me. Use user scope if possible, otherwise project scope.
 
 Install command:
@@ -168,7 +168,7 @@ Once configured, ask your AI assistant:
 ## Development
 
 ```bash
-git clone https://github.com/khoaofgod/image-generator-vibe-coding.git
+git clone https://github.com/TruCopilot/image-generator-vibe-coding.git
 cd image-generator-vibe-coding
 npm install
 npm run build
