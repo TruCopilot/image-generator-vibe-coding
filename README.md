@@ -24,7 +24,9 @@ Then update my CLAUDE.md (or AGENTS.md) and your memory with these image generat
 # Image Generation (MANDATORY for all visual content)
 
 - MCP Server: `image-generator` (via @hallutraceai/image-generator-vibe-coding)
-- Model: `<b>[YourModelName]</b>` (use `flash` for speed, `pro` for quality)
+- Model: `<b>[YourModelName]</b>`
+  - OpenRouter: `google/gemini-2.5-flash-image` (fast) or `google/gemini-3-pro-image-preview` (quality)
+  - Gemini direct: `gemini-2.5-flash-image` (fast) or `gemini-3-pro-image-preview` (quality)
 - Provider: OpenRouter (default)
 
 ## Rules
@@ -63,7 +65,7 @@ Save this to your persistent memory so every future session uses these rules aut
 | Placeholder | Replace with | Example |
 |---|---|---|
 | `[YourOpenRouterAPIKey]` | Your OpenRouter API key | `sk-or-v1-abc123...` |
-| `[YourModelName]` | `flash` or `pro` | `flash` (fast) / `pro` (high quality) |
+| `[YourModelName]` | Full model ID from your provider | OpenRouter: `google/gemini-2.5-flash-image`, Gemini: `gemini-2.5-flash-image` |
 
 ---
 
@@ -133,7 +135,7 @@ Generate an image from a text prompt.
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `prompt` | string | (required) | Text description of the image |
-| `model` | `"flash"` \| `"pro"` | `"flash"` | Which model to use |
+| `model` | string | `"google/gemini-2.5-flash-image"` | Full model ID. OpenRouter: `google/gemini-2.5-flash-image`, `google/gemini-3-pro-image-preview`. Gemini: `gemini-2.5-flash-image`, `gemini-3-pro-image-preview`. Shortcuts: `flash`, `pro` |
 | `aspectRatio` | `"1:1"` \| `"16:9"` \| `"9:16"` \| `"3:4"` \| `"4:3"` \| `"2:3"` \| `"3:2"` \| `"4:5"` \| `"5:4"` \| `"21:9"` | `"1:1"` | Aspect ratio |
 | `imageSize` | `"0.5K"` \| `"1K"` \| `"2K"` \| `"4K"` | `"2K"` | Resolution |
 | `outputDir` | string | `"./generated-images"` | Save directory |
@@ -147,7 +149,7 @@ Edit an existing image with text instructions.
 |---|---|---|---|
 | `prompt` | string | (required) | Edit instructions |
 | `imagePath` | string | (required) | Path to source image |
-| `model` | `"flash"` \| `"pro"` | `"flash"` | Which model to use |
+| `model` | string | `"google/gemini-2.5-flash-image"` | Full model ID (same options as generate_image) |
 | `aspectRatio` | `"1:1"` \| `"16:9"` \| `"9:16"` \| `"3:4"` \| `"4:3"` \| `"2:3"` \| `"3:2"` \| `"4:5"` \| `"5:4"` \| `"21:9"` | (optional) | Output aspect ratio |
 | `outputDir` | string | `"./generated-images"` | Save directory |
 | `provider` | `"openrouter"` \| `"gemini"` | auto-detect | API provider |

@@ -11,15 +11,26 @@ import * as path from "node:path";
 
 type Provider = "openrouter" | "gemini";
 
-const OPENROUTER_MODELS: Record<string, string> = {
-  flash: "google/gemini-2.5-flash-image",
-  pro: "google/gemini-3-pro-image-preview",
+// Maps model input → { openrouter, gemini } IDs.
+// Accepts shortcuts (flash/pro), full OpenRouter IDs, or full Gemini IDs.
+const MODEL_MAP: Record<string, { openrouter: string; gemini: string }> = {
+  // Shortcuts
+  flash: { openrouter: "google/gemini-2.5-flash-image", gemini: "gemini-2.5-flash-image" },
+  pro: { openrouter: "google/gemini-3-pro-image-preview", gemini: "gemini-3-pro-image-preview" },
+  // Full OpenRouter names
+  "google/gemini-2.5-flash-image": { openrouter: "google/gemini-2.5-flash-image", gemini: "gemini-2.5-flash-image" },
+  "google/gemini-3-pro-image-preview": { openrouter: "google/gemini-3-pro-image-preview", gemini: "gemini-3-pro-image-preview" },
+  // Full Gemini names
+  "gemini-2.5-flash-image": { openrouter: "google/gemini-2.5-flash-image", gemini: "gemini-2.5-flash-image" },
+  "gemini-3-pro-image-preview": { openrouter: "google/gemini-3-pro-image-preview", gemini: "gemini-3-pro-image-preview" },
 };
 
-const GEMINI_MODELS: Record<string, string> = {
-  flash: "gemini-2.5-flash-image",
-  pro: "gemini-3-pro-image-preview",
-};
+function resolveModel(model: string, provider: Provider): string {
+  const mapped = MODEL_MAP[model];
+  if (mapped) return mapped[provider];
+  // Unknown model — pass through as-is (supports any OpenRouter model ID)
+  return model;
+}
 
 const IMAGE_SIZES: Record<string, { width: number; height: number }> = {
   "0.5K": { width: 512, height: 512 },
@@ -114,11 +125,10 @@ interface OpenRouterImageResult {
 
 async function openrouterGenerate(
   prompt: string,
-  model: string,
+  modelId: string,
   aspectRatio: string,
   imageSize: string
 ): Promise<OpenRouterImageResult> {
-  const modelId = OPENROUTER_MODELS[model] || model;
 
   const body: Record<string, unknown> = {
     model: modelId,
@@ -183,10 +193,9 @@ async function openrouterEdit(
   prompt: string,
   imageBase64: string,
   imageMimeType: string,
-  model: string,
+  modelId: string,
   aspectRatio?: string
 ): Promise<OpenRouterImageResult> {
-  const modelId = OPENROUTER_MODELS[model] || model;
   const dataUrl = `data:${imageMimeType};base64,${imageBase64}`;
 
   const body: Record<string, unknown> = {
@@ -259,12 +268,10 @@ async function openrouterEdit(
 
 async function geminiGenerate(
   prompt: string,
-  model: string,
+  modelId: string,
   aspectRatio: string
 ): Promise<OpenRouterImageResult> {
   if (!geminiAi) throw new Error("GEMINI_API_KEY is not set");
-
-  const modelId = GEMINI_MODELS[model];
   const response = await geminiAi.models.generateContent({
     model: modelId,
     contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -298,12 +305,10 @@ async function geminiEdit(
   prompt: string,
   imageBase64: string,
   imageMimeType: string,
-  model: string,
+  modelId: string,
   aspectRatio?: string
 ): Promise<OpenRouterImageResult> {
   if (!geminiAi) throw new Error("GEMINI_API_KEY is not set");
-
-  const modelId = GEMINI_MODELS[model];
   const response = await geminiAi.models.generateContent({
     model: modelId,
     contents: [
@@ -364,10 +369,10 @@ server.tool(
   {
     prompt: z.string().describe("Text description of the image to generate"),
     model: z
-      .enum(["flash", "pro"])
-      .default("flash")
+      .string()
+      .default("google/gemini-2.5-flash-image")
       .describe(
-        'Model to use: "flash" (fast, high-volume) or "pro" (high quality)'
+        'Model to use. OpenRouter: "google/gemini-2.5-flash-image" (fast) or "google/gemini-3-pro-image-preview" (quality). Gemini: "gemini-2.5-flash-image" or "gemini-3-pro-image-preview". Shortcuts: "flash", "pro".'
       ),
     aspectRatio: z
       .enum(ASPECT_RATIOS)
@@ -391,18 +396,15 @@ server.tool(
   async ({ prompt, model, aspectRatio, imageSize, outputDir, provider }) => {
     try {
       const activeProvider = resolveProvider(provider);
-      const modelId =
-        activeProvider === "openrouter"
-          ? OPENROUTER_MODELS[model]
-          : GEMINI_MODELS[model];
+      const modelId = resolveModel(model, activeProvider);
       const size = IMAGE_SIZES[imageSize];
 
       let result: OpenRouterImageResult;
 
       if (activeProvider === "openrouter") {
-        result = await openrouterGenerate(prompt, model, aspectRatio, imageSize);
+        result = await openrouterGenerate(prompt, modelId, aspectRatio, imageSize);
       } else {
-        result = await geminiGenerate(prompt, model, aspectRatio);
+        result = await geminiGenerate(prompt, modelId, aspectRatio);
       }
 
       if (result.images.length === 0) {
@@ -472,9 +474,11 @@ server.tool(
       .describe("Text instructions for how to edit the image"),
     imagePath: z.string().describe("Path to the source image to edit"),
     model: z
-      .enum(["flash", "pro"])
-      .default("flash")
-      .describe('Model to use: "flash" (fast) or "pro" (high quality)'),
+      .string()
+      .default("google/gemini-2.5-flash-image")
+      .describe(
+        'Model to use. OpenRouter: "google/gemini-2.5-flash-image" or "google/gemini-3-pro-image-preview". Gemini: "gemini-2.5-flash-image" or "gemini-3-pro-image-preview". Shortcuts: "flash", "pro".'
+      ),
     aspectRatio: z
       .enum(ASPECT_RATIOS)
       .optional()
@@ -493,10 +497,7 @@ server.tool(
   async ({ prompt, imagePath, model, aspectRatio, outputDir, provider }) => {
     try {
       const activeProvider = resolveProvider(provider);
-      const modelId =
-        activeProvider === "openrouter"
-          ? OPENROUTER_MODELS[model]
-          : GEMINI_MODELS[model];
+      const modelId = resolveModel(model, activeProvider);
 
       const resolvedPath = path.resolve(imagePath);
       if (!fs.existsSync(resolvedPath)) {
@@ -530,7 +531,7 @@ server.tool(
           prompt,
           imageBase64,
           imageMimeType,
-          model,
+          modelId,
           aspectRatio
         );
       } else {
@@ -538,7 +539,7 @@ server.tool(
           prompt,
           imageBase64,
           imageMimeType,
-          model,
+          modelId,
           aspectRatio
         );
       }
