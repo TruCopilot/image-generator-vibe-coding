@@ -2,6 +2,77 @@
 
 An MCP (Model Context Protocol) server for AI image generation using Google Gemini. Supports **OpenRouter** (default) and **direct Gemini API**. Works with **Claude Code**, **Cursor**, **Windsurf**, and any MCP-compatible tool.
 
+---
+
+## Quick Install (Copy & Paste)
+
+### Step 1 — Install the MCP server
+
+**User scope** (available in all your projects):
+
+```bash
+claude mcp add --scope user image-generator \
+  -e OPENROUTER_API_KEY=YOUR_OPENROUTER_API_KEY \
+  -- npx -y @hallutraceai/image-generator-vibe-coding
+```
+
+<details>
+<summary>Project scope (current project only)</summary>
+
+```bash
+claude mcp add image-generator \
+  -e OPENROUTER_API_KEY=YOUR_OPENROUTER_API_KEY \
+  -- npx -y @hallutraceai/image-generator-vibe-coding
+```
+
+</details>
+
+> Replace `YOUR_OPENROUTER_API_KEY` with your key from [openrouter.ai/keys](https://openrouter.ai/keys)
+
+### Step 2 — Add rules to your CLAUDE.md
+
+Paste the block below into your project's `CLAUDE.md` (or `AGENTS.md`).
+Replace the two `[...]` placeholders with your values.
+
+````markdown
+# Image Generation (MANDATORY for all visual content)
+
+- **MCP Server:** `image-generator` (via `@hallutraceai/image-generator-vibe-coding`)
+- **Model:** `[YourModelName]` — use `flash` for speed or `pro` for quality
+- **OpenRouter API Key:** Set via env `OPENROUTER_API_KEY=[YourOpenRouterAPIKey]`
+
+## Rules
+- **ALWAYS** use the `image-generator` MCP to generate images for hero sections, banners, cards, backgrounds, avatars, and any visual content that enhances the UI
+- **CRITICAL**: Always call via **sub-agent** (`Agent` tool) — base64 image data will crash the main context window if returned directly
+- **Resolution:** Always `2K` (default) — never go below unless explicitly asked
+- **Style:** Ultra-realistic, high detail, professional photography quality — include lighting, composition, and mood descriptors in every prompt
+- **Aspect Ratios — choose based on design context:**
+  - `1:1` — Avatars, profile pictures, square cards, thumbnails, social media posts
+  - `16:9` — Hero banners, page headers, blog covers, landscape backgrounds, video thumbnails
+  - `9:16` — Mobile splash screens, story formats, vertical banners, phone wallpapers
+  - `3:4` / `4:3` — Product cards, feature sections, content blocks
+  - `2:3` / `3:2` — Portrait/landscape editorial, magazine-style layouts
+- **Output directory:** `./public/images/generated/` (or project-appropriate path)
+- After generating, reference the saved file path in `<img>` or CSS `background-image` — never embed base64 in markup
+
+## Sub-Agent Pattern (Required)
+```
+Agent tool → prompt: "Use the image-generator MCP generate_image tool with:
+  prompt: '<detailed visual description>',
+  model: '[YourModelName]',
+  aspectRatio: '<ratio>',
+  imageSize: '2K',
+  outputDir: './public/images/generated/'
+Report back ONLY the saved file path, do NOT return image data."
+```
+````
+
+### Step 3 — Done!
+
+Restart Claude Code. Your AI assistant will now automatically generate images when building UI.
+
+---
+
 ## Providers
 
 | Provider | Default | API Key Env Var | Notes |
