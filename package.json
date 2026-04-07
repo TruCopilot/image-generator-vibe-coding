@@ -1,5 +1,5 @@
 {
-  "name": "@hallutraceai/image-generator-vibe-coding",
+  "name": "@trucopilot/image-generator-vibe-coding",
   "version": "1.2.0",
   "description": "MCP server for AI image generation via OpenRouter (default) or Google Gemini. Works with Claude Code, Cursor, Windsurf, and any MCP-compatible tool.",
   "type": "module",

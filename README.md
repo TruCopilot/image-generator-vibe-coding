@@ -17,13 +17,13 @@ image-generator MCP server for me. Use user scope if possible, otherwise project
 Install command:
 claude mcp add --scope user image-generator \
   -e OPENROUTER_API_KEY=<b>[YourOpenRouterAPIKey]</b> \
-  -- npx -y @hallutraceai/image-generator-vibe-coding
+  -- npx -y @trucopilot/image-generator-vibe-coding
 
 Then update my CLAUDE.md (or AGENTS.md) and your memory with these image generation rules:
 
 # Image Generation (MANDATORY for all visual content)
 
-- MCP Server: `image-generator` (via @hallutraceai/image-generator-vibe-coding)
+- MCP Server: `image-generator` (via @trucopilot/image-generator-vibe-coding)
 - Model: `<b>[YourModelName]</b>`
   - OpenRouter: `google/gemini-2.5-flash-image` (fast) or `google/gemini-3-pro-image-preview` (quality)
   - Gemini direct: `gemini-2.5-flash-image` (fast) or `gemini-3-pro-image-preview` (quality)
@@ -99,7 +99,7 @@ Provider is auto-detected from available env vars (OpenRouter preferred). You ca
 #### Claude Code
 
 ```bash
-claude mcp add image-generator -- npx -y @hallutraceai/image-generator-vibe-coding
+claude mcp add image-generator -- npx -y @trucopilot/image-generator-vibe-coding
 ```
 
 Then set your API key:
@@ -119,7 +119,7 @@ Add to your MCP settings:
   "mcpServers": {
     "image-generator": {
       "command": "npx",
-      "args": ["-y", "@hallutraceai/image-generator-vibe-coding"],
+      "args": ["-y", "@trucopilot/image-generator-vibe-coding"],
       "env": {
         "OPENROUTER_API_KEY": "your-openrouter-key-here"
       }
