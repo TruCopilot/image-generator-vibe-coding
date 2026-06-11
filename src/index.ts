@@ -151,7 +151,7 @@ const geminiAi = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
 const server = new McpServer({
   name: "image-generator-vibe-coding",
-  version: "1.1.0",
+  version: "1.3.0",
 });
 
 // --- Utility Functions ---
