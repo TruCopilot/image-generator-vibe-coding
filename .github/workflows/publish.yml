@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
   id-token: write
+  contents: read
 
 jobs:
   publish:
@@ -18,13 +18,23 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Upgrade npm for OIDC trusted publishing
         run: npm install -g npm@latest
 
+      - name: Verify Node and npm versions
+        run: |
+          node --version
+          npm --version
+          node -e "const v=process.versions.node.split('.').map(Number); if(v[0]<22||(v[0]===22&&v[1]<14)) process.exit(1)"
+
+      - name: Remove token auth from .npmrc (use OIDC instead)
+        run: sed -i.bak '/:_authToken=/d' ~/.npmrc && cat ~/.npmrc || true
+
       - run: npm ci
       - run: npm run build
 
-      - name: Publish to npm
-        run: npm publish --access public --provenance
+      - name: Publish to npm via trusted publisher
+        run: npm publish --access public
