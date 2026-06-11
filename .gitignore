@@ -2,5 +2,6 @@ node_modules/
 dist/
 .env
 .mcp.json
+.cursor/mcp.json
 generated-images/
 *.tgz

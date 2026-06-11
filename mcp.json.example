@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "image-generator": {
+      "command": "node",
+      "args": ["/absolute/path/to/image-mcp/dist/index.js"],
+      "env": {
+        "RUNWARE_API_KEY": "your-runware-key-here"
+      }
+    }
+  }
+}

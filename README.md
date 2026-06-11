@@ -8,6 +8,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-8A2BE2?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PHBhdGggZD0iTTEyIDJMMyA3djEwbDkgNSA5LTVWN2wtOS01eiIvPjwvc3ZnPg==)](https://modelcontextprotocol.io)
 [![OpenRouter](https://img.shields.io/badge/OpenRouter-300%2B%20models-6366f1?style=flat-square)](https://openrouter.ai)
+[![Runware](https://img.shields.io/badge/Runware-400K%2B%20models-00c896?style=flat-square)](https://runware.ai)
 
 Works with **Claude Code** · **Cursor** · **Windsurf** · **any MCP client**
 
@@ -91,7 +92,9 @@ Your vibe-coded website goes from **"skeleton with grey boxes"** to **"fully des
 
 ## ⚡ Quick Install
 
-**One command — paste into your terminal:**
+Set **at least one** API key. Provider priority when auto-detecting: **OpenRouter → Runware → Gemini**.
+
+### OpenRouter (default)
 
 ```bash
 claude mcp add --scope user image-generator \
@@ -99,14 +102,40 @@ claude mcp add --scope user image-generator \
   -- npx -y @trucopilot/image-generator-vibe-coding
 ```
 
-> 🔑 Get your API key at [openrouter.ai/keys](https://openrouter.ai/keys) — replace `YOUR_OPENROUTER_API_KEY` above
+> 🔑 Get your key at [openrouter.ai/keys](https://openrouter.ai/keys)
+
+### Runware (diffusion models, cost-efficient)
+
+```bash
+claude mcp add --scope user image-generator \
+  -e RUNWARE_API_KEY=YOUR_RUNWARE_API_KEY \
+  -- npx -y @trucopilot/image-generator-vibe-coding
+```
+
+> 🔑 Get your key at [runware.ai](https://runware.ai) — then pass `provider: "runware"` on each tool call (or set Runware as your only key for auto-detection)
+
+### Gemini (direct API)
+
+```bash
+claude mcp add --scope user image-generator \
+  -e GEMINI_API_KEY=YOUR_GEMINI_API_KEY \
+  -- npx -y @trucopilot/image-generator-vibe-coding
+```
+
+> 🔑 Get your key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
 
 <details>
 <summary>📁 Project scope only (click to expand)</summary>
 
 ```bash
+# OpenRouter
 claude mcp add image-generator \
   -e OPENROUTER_API_KEY=YOUR_OPENROUTER_API_KEY \
+  -- npx -y @trucopilot/image-generator-vibe-coding
+
+# Runware
+claude mcp add image-generator \
+  -e RUNWARE_API_KEY=YOUR_RUNWARE_API_KEY \
   -- npx -y @trucopilot/image-generator-vibe-coding
 ```
 
@@ -114,6 +143,8 @@ claude mcp add image-generator \
 
 <details>
 <summary>⚙️ Manual JSON config — Claude Code, Cursor, Windsurf, etc. (click to expand)</summary>
+
+**OpenRouter:**
 
 ```json
 {
@@ -123,6 +154,58 @@ claude mcp add image-generator \
       "args": ["-y", "@trucopilot/image-generator-vibe-coding"],
       "env": {
         "OPENROUTER_API_KEY": "your-openrouter-key-here"
+      }
+    }
+  }
+}
+```
+
+**Runware:**
+
+```json
+{
+  "mcpServers": {
+    "image-generator": {
+      "command": "npx",
+      "args": ["-y", "@trucopilot/image-generator-vibe-coding"],
+      "env": {
+        "RUNWARE_API_KEY": "your-runware-key-here"
+      }
+    }
+  }
+}
+```
+
+**Multiple providers** (set all keys you have — OpenRouter is preferred when multiple are present):
+
+```json
+{
+  "mcpServers": {
+    "image-generator": {
+      "command": "npx",
+      "args": ["-y", "@trucopilot/image-generator-vibe-coding"],
+      "env": {
+        "OPENROUTER_API_KEY": "your-openrouter-key-here",
+        "RUNWARE_API_KEY": "your-runware-key-here",
+        "GEMINI_API_KEY": "your-gemini-key-here"
+      }
+    }
+  }
+}
+```
+
+**Cursor** — add the JSON above to `.cursor/mcp.json` (project) or **Cursor Settings → MCP** (global).
+
+**Local development** (run from this repo instead of npm):
+
+```json
+{
+  "mcpServers": {
+    "image-generator": {
+      "command": "node",
+      "args": ["/absolute/path/to/image-mcp/dist/index.js"],
+      "env": {
+        "RUNWARE_API_KEY": "your-runware-key-here"
       }
     }
   }
@@ -143,9 +226,14 @@ Drop this prompt into **Claude Code** (or any AI coding tool). Replace the **two
 Fetch this doc: https://github.com/TruCopilot/image-generator-vibe-coding and install the
 image-generator MCP server for me. Use user scope if possible, otherwise project scope.
 
-Install command:
+Install command (pick your provider):
 claude mcp add --scope user image-generator \
   -e OPENROUTER_API_KEY=<b>[YourOpenRouterAPIKey]</b> \
+  -- npx -y @trucopilot/image-generator-vibe-coding
+
+# OR for Runware:
+claude mcp add --scope user image-generator \
+  -e RUNWARE_API_KEY=<b>[YourRunwareAPIKey]</b> \
   -- npx -y @trucopilot/image-generator-vibe-coding
 
 Then update my CLAUDE.md (or AGENTS.md) and your memory with these image generation rules:
@@ -153,10 +241,11 @@ Then update my CLAUDE.md (or AGENTS.md) and your memory with these image generat
 # Image Generation (MANDATORY for all visual content)
 
 - MCP Server: `image-generator` (via @trucopilot/image-generator-vibe-coding)
+- Provider: `<b>[YourProvider]</b>` — `openrouter` · `runware` · `gemini`
 - Model: `<b>[YourModelName]</b>`
   - OpenRouter: `google/gemini-2.5-flash-image` (fast) or `google/gemini-3-pro-image-preview` (quality)
+  - Runware: `runware:400@6` (default, cheapest) · `runware:101@1` (FLUX, img2img) · any Runware model ID
   - Gemini direct: `gemini-2.5-flash-image` (fast) or `gemini-3-pro-image-preview` (quality)
-- Provider: OpenRouter (default)
 
 ## Rules
 - ALWAYS use the `image-generator` MCP to generate images when working on new designs,
@@ -164,9 +253,12 @@ Then update my CLAUDE.md (or AGENTS.md) and your memory with these image generat
   backgrounds, avatars, and any visual content
 - CRITICAL: Always call via sub-agent (Agent tool) — base64 image data will crash
   the main context window if returned directly
-- Resolution: Always `2K` — never go below unless I explicitly ask
+- Resolution:
+  - Runware: default `1K` (1024px, cheapest). Use `2K` for hero banners. Only use `4K` if I ask.
+  - OpenRouter/Gemini: default `2K`
 - Style: Ultra-realistic, high detail, professional photography quality — include
   lighting, composition, and mood descriptors in every prompt
+- Runware: use `negativePrompt` for quality control (e.g. "blurry, watermark, extra fingers")
 - Aspect ratios — choose based on design context:
   - `1:1`  → Avatars, profile pics, square cards, thumbnails
   - `16:9` → Hero banners, page headers, blog covers, landscape backgrounds
@@ -180,10 +272,11 @@ Then update my CLAUDE.md (or AGENTS.md) and your memory with these image generat
 ## Sub-Agent Pattern (Required)
 Always generate images through a sub-agent like this:
   Agent tool → "Use the image-generator MCP generate_image tool with:
+    provider: '[YourProvider]',
     prompt: '&lt;detailed visual description&gt;',
     model: '[YourModelName]',
     aspectRatio: '&lt;pick based on context&gt;',
-    imageSize: '2K',
+    imageSize: '&lt;1K for Runware default, 2K for OpenRouter&gt;',
     outputDir: './public/images/generated/'
   Report back ONLY the saved file path, do NOT return image data."
 
@@ -195,7 +288,9 @@ Save this to your persistent memory so every future session uses these rules aut
 | Placeholder | Replace with | Example |
 |:---|:---|:---|
 | `[YourOpenRouterAPIKey]` | Your OpenRouter API key | `sk-or-v1-abc123...` |
-| `[YourModelName]` | Full model ID from your provider | OpenRouter: `google/gemini-2.5-flash-image` · Gemini: `gemini-2.5-flash-image` |
+| `[YourRunwareAPIKey]` | Your Runware API key | From [runware.ai](https://runware.ai) dashboard |
+| `[YourProvider]` | Provider to use | `runware` · `openrouter` · `gemini` |
+| `[YourModelName]` | Full model ID from your provider | Runware: `runware:400@6` · OpenRouter: `google/gemini-2.5-flash-image` |
 
 ---
 
@@ -203,24 +298,36 @@ Save this to your persistent memory so every future session uses these rules aut
 
 <table>
 <tr>
-<td align="center" width="50%">
+<td align="center" width="33%">
 
 ### ☁️ OpenRouter <sup>default</sup>
 
-Access **300+ models** via one API<br/>
-OpenAI-compatible · Auto-detected<br/>
+**300+ models** via one API<br/>
+OpenAI-compatible<br/>
 
 `OPENROUTER_API_KEY`
 
 [Get your key →](https://openrouter.ai/keys)
 
 </td>
-<td align="center" width="50%">
+<td align="center" width="33%">
 
-### 🔷 Google Gemini <sup>fallback</sup>
+### 🟢 Runware
+
+**400K+ diffusion models**<br/>
+FLUX · SDXL · SD 1.5 · Civitai<br/>
+
+`RUNWARE_API_KEY`
+
+[Get your key →](https://runware.ai)
+
+</td>
+<td align="center" width="33%">
+
+### 🔷 Google Gemini
 
 Direct Gemini API access<br/>
-Used when only Gemini key is set<br/>
+Native image generation<br/>
 
 `GEMINI_API_KEY`
 
@@ -230,11 +337,13 @@ Used when only Gemini key is set<br/>
 </tr>
 </table>
 
-> Provider is auto-detected from available env vars. OpenRouter is preferred. Override per-request with the `provider` parameter.
+> Provider is auto-detected from available env vars: **OpenRouter → Runware → Gemini**. Override per-request with `provider: "openrouter"` · `"runware"` · `"gemini"`.
 
 ---
 
 ## 🧠 Models
+
+### OpenRouter / Gemini
 
 | Model | OpenRouter ID | Gemini ID | Best For |
 |:---|:---|:---|:---|
@@ -242,8 +351,18 @@ Used when only Gemini key is set<br/>
 | 💎 **Pro** | `google/gemini-3-pro-image-preview` | `gemini-3-pro-image-preview` | Maximum quality output |
 
 > 🔍 **[Browse 300+ image models on OpenRouter →](https://openrouter.ai/models?fmt=cards&input_modalities=text&output_modalities=image)**
+
+### Runware
+
+| Model | ID | Best For |
+|:---|:---|:---|
+| ⚡ **Default** | `runware:400@6` | Text-to-image, cost-efficient (~$0.004/image at 1K) |
+| 🎨 **FLUX Dev** | `runware:101@1` | Image-to-image editing, style transfer |
+| 🔧 **Custom** | Any Runware model ID | e.g. `civitai:101055@128078`, `runware:101@1` |
+
+> 🔍 **[Browse 400K+ models on Runware →](https://runware.ai/models)** — pass any model ID in the `model` parameter with `provider: "runware"`.
 >
-> Any model ID from that page works directly in the `model` parameter.
+> **Note:** `runware:400@6` is text-to-image only. For `edit_image`, the server auto-falls back to `runware:101@1` (FLUX) when the default model is used.
 
 ---
 
@@ -256,11 +375,14 @@ Generate an image from a text prompt.
 | Parameter | Type | Default | Description |
 |:---|:---|:---|:---|
 | `prompt` | `string` | *(required)* | Text description of the image |
-| `model` | `string` | `google/gemini-2.5-flash-image` | Full model ID — see [Models](#-models). Shortcuts: `flash`, `pro` |
+| `model` | `string` | `google/gemini-2.5-flash-image` | Model ID — see [Models](#-models). Runware defaults to `runware:400@6` when a Gemini model name is passed |
 | `aspectRatio` | `enum` | `1:1` | `1:1` · `16:9` · `9:16` · `3:4` · `4:3` · `2:3` · `3:2` · `4:5` · `5:4` · `21:9` |
-| `imageSize` | `enum` | `2K` | `0.5K` · `1K` · `2K` · `4K` |
+| `imageSize` | `enum` | `2K` / `1K`* | `0.5K` · `1K` · `2K` · `4K` — *Runware defaults to `1K` |
 | `outputDir` | `string` | `./generated-images` | Directory to save generated images |
-| `provider` | `enum` | auto-detect | `openrouter` · `gemini` |
+| `provider` | `enum` | auto-detect | `openrouter` · `runware` · `gemini` |
+| `negativePrompt` | `string` | — | **Runware only** — what to avoid (e.g. `blurry, watermark, extra fingers`) |
+| `steps` | `number` | `30` | **Runware only** — denoising steps |
+| `cfgScale` | `number` | — | **Runware only** — CFG scale for prompt adherence |
 
 ### ✏️ `edit_image`
 
@@ -270,16 +392,23 @@ Edit an existing image with text instructions.
 |:---|:---|:---|:---|
 | `prompt` | `string` | *(required)* | Edit instructions |
 | `imagePath` | `string` | *(required)* | Path to source image |
-| `model` | `string` | `google/gemini-2.5-flash-image` | Full model ID — same options as above |
+| `model` | `string` | `google/gemini-2.5-flash-image` | Model ID — Runware img2img: use `runware:101@1` or let server auto-fallback from `runware:400@6` |
 | `aspectRatio` | `enum` | *(optional)* | Output aspect ratio |
+| `imageSize` | `enum` | `1K`* | **Runware only** — resolution tier |
 | `outputDir` | `string` | `./generated-images` | Directory to save edited images |
-| `provider` | `enum` | auto-detect | `openrouter` · `gemini` |
+| `provider` | `enum` | auto-detect | `openrouter` · `runware` · `gemini` |
+| `negativePrompt` | `string` | — | **Runware only** |
+| `steps` | `number` | `30` | **Runware only** |
+| `cfgScale` | `number` | — | **Runware only** |
+| `strength` | `number` | `0.85` | **Runware only** — img2img strength (0 = preserve, 1 = full transform) |
 
 ---
 
 ## 📐 Aspect Ratio Guide
 
-| Ratio | Resolution | Best For |
+### OpenRouter / Gemini
+
+| Ratio | Resolution (2K) | Best For |
 |:---|:---|:---|
 | `1:1` | 1024×1024 | Avatars, profile pics, square cards, thumbnails |
 | `16:9` | 1344×768 | Hero banners, page headers, blog covers, landscape BGs |
@@ -288,6 +417,18 @@ Edit an existing image with text instructions.
 | `2:3` / `3:2` | 832×1248 | Portrait/landscape editorial, magazine layouts |
 | `4:5` / `5:4` | 896×1152 | Social media posts, Instagram |
 | `21:9` | 1536×672 | Ultra-wide banners, cinematic headers |
+
+### Runware
+
+Runware dimensions are computed from aspect ratio + size tier. All values are **multiples of 64**. Max dimension is **2048** unless `4K` is explicitly requested.
+
+| Ratio | 1K (default) | 2K | Best For |
+|:---|:---|:---|:---|
+| `1:1` | 1024×1024 | 2048×2048 | Avatars, cards, thumbnails |
+| `16:9` | 1024×576 | 2048×1152 | Hero banners, cinematic headers |
+| `9:16` | 576×1024 | 1152×2048 | Mobile splash, stories |
+| `3:4` / `4:3` | 768×1024 / 1024×768 | 1536×2048 / 2048×1536 | Product cards, features |
+| `21:9` | 1024×448 | 2048×896 | Ultra-wide banners |
 
 ---
 
@@ -308,6 +449,18 @@ Once configured, just ask your AI assistant:
 "Generate a 1:1 avatar of a friendly robot mascot, 3D rendered, studio lighting"
 ```
 
+**Runware-specific** (mention provider or set `RUNWARE_API_KEY` as your only key):
+
+```
+"Generate a product photo using Runware — a ceramic coffee mug on marble, studio lighting, provider runware, 1K"
+```
+```
+"Create a 16:9 hero banner with Runware at 2K — mountain landscape at golden hour, negative prompt blurry watermark"
+```
+```
+"Edit ./public/images/hero.png to watercolor style using Runware"
+```
+
 ---
 
 ## 🔧 Development
@@ -316,14 +469,27 @@ Once configured, just ask your AI assistant:
 git clone https://github.com/TruCopilot/image-generator-vibe-coding.git
 cd image-generator-vibe-coding
 npm install
+cp .env.example .env   # add your API key(s)
 npm run build
 ```
 
-Test locally:
+Test the MCP server locally:
 
 ```bash
+# OpenRouter
 OPENROUTER_API_KEY=your-key node dist/index.js
+
+# Runware
+RUNWARE_API_KEY=your-key node dist/index.js
 ```
+
+Run the Runware integration test suite:
+
+```bash
+RUNWARE_API_KEY=your-key node scripts/test-runware.mjs
+```
+
+This validates dimension math, text-to-image, negative prompts, image-to-image, and server startup.
 
 ---
 
@@ -331,6 +497,6 @@ OPENROUTER_API_KEY=your-key node dist/index.js
 
 **Built with ❤️ by [TruCopilot](https://trucopilot.com)**
 
-[GitHub](https://github.com/TruCopilot/image-generator-vibe-coding) · [npm](https://www.npmjs.com/package/@trucopilot/image-generator-vibe-coding) · [OpenRouter](https://openrouter.ai) · [MIT License](LICENSE)
+[GitHub](https://github.com/TruCopilot/image-generator-vibe-coding) · [npm](https://www.npmjs.com/package/@trucopilot/image-generator-vibe-coding) · [OpenRouter](https://openrouter.ai) · [Runware](https://runware.ai) · [MIT License](LICENSE)
 
 </div>

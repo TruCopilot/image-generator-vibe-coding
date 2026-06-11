@@ -1,7 +1,7 @@
 {
   "name": "@trucopilot/image-generator-vibe-coding",
   "version": "1.2.0",
-  "description": "MCP server for AI image generation via OpenRouter (default) or Google Gemini. Works with Claude Code, Cursor, Windsurf, and any MCP-compatible tool.",
+  "description": "MCP server for AI image generation via OpenRouter (default), Runware, or Google Gemini. Works with Claude Code, Cursor, Windsurf, and any MCP-compatible tool.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -16,12 +16,14 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
+    "test:runware": "node scripts/test-runware.mjs",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",
     "image-generation",
     "openrouter",
+    "runware",
     "gemini",
     "ai",
     "vibe-coding",
