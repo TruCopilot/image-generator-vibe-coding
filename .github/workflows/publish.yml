@@ -16,22 +16,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Do NOT set registry-url — it writes _authToken to .npmrc and breaks OIDC
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          registry-url: "https://registry.npmjs.org"
 
-      - name: Upgrade npm for OIDC trusted publishing
-        run: npm install -g npm@latest
-
-      - name: Verify Node and npm versions
+      - name: Install npm 11.6+ for OIDC trusted publishing
         run: |
+          npm install -g npm@11.6.2
           node --version
           npm --version
-          node -e "const v=process.versions.node.split('.').map(Number); if(v[0]<22||(v[0]===22&&v[1]<14)) process.exit(1)"
 
-      - name: Remove token auth from .npmrc (use OIDC instead)
-        run: sed -i.bak '/:_authToken=/d' ~/.npmrc && cat ~/.npmrc || true
+      - name: Verify OIDC is available
+        run: |
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL}" ]; then
+            echo "OIDC token NOT available"
+            exit 1
+          fi
+          echo "OIDC token available"
+
+      - name: Remove any .npmrc auth config (must use OIDC only)
+        run: |
+          rm -f ~/.npmrc "${RUNNER_TEMP}/.npmrc" .npmrc
+          echo "Cleared .npmrc files"
 
       - run: npm ci
       - run: npm run build
