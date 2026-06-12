@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
+  id-token: write
 
 jobs:
   publish:
@@ -21,36 +21,10 @@ jobs:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Install npm 11.6+ for OIDC trusted publishing
-        run: |
-          npm install -g npm@11.6.2
-          which npm
-          node --version
-          npm --version
-
-      - name: Verify OIDC is available
-        run: |
-          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL}" ]; then
-            echo "OIDC token NOT available"
-            exit 1
-          fi
-          echo "OIDC token available"
-
       - run: npm ci
       - run: npm run build
 
-      # setup-node writes _authToken=${NODE_AUTH_TOKEN} which blocks OIDC when empty.
-      # Provenance needs registry-url; publish needs auth lines removed from ALL .npmrc paths.
-      - name: Strip token auth from .npmrc (enable OIDC)
-        run: |
-          for f in ~/.npmrc "${RUNNER_TEMP}/.npmrc" .npmrc; do
-            if [ -f "$f" ]; then
-              sed -i.bak '/:_authToken=/d' "$f"
-              sed -i.bak '/always-auth/d' "$f"
-              echo "=== $f ==="
-              cat "$f"
-            fi
-          done
-
-      - name: Publish to npm via trusted publisher
-        run: npm publish --access public
+      - name: Publish to npm
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
