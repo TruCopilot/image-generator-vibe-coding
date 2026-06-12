@@ -16,14 +16,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Do NOT set registry-url — it writes _authToken to .npmrc and breaks OIDC
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install npm 11.6+ for OIDC trusted publishing
         run: |
           npm install -g npm@11.6.2
+          which npm
           node --version
           npm --version
 
@@ -35,13 +36,21 @@ jobs:
           fi
           echo "OIDC token available"
 
-      - name: Remove any .npmrc auth config (must use OIDC only)
-        run: |
-          rm -f ~/.npmrc "${RUNNER_TEMP}/.npmrc" .npmrc
-          echo "Cleared .npmrc files"
-
       - run: npm ci
       - run: npm run build
+
+      # setup-node writes _authToken=${NODE_AUTH_TOKEN} which blocks OIDC when empty.
+      # Provenance needs registry-url; publish needs auth lines removed from ALL .npmrc paths.
+      - name: Strip token auth from .npmrc (enable OIDC)
+        run: |
+          for f in ~/.npmrc "${RUNNER_TEMP}/.npmrc" .npmrc; do
+            if [ -f "$f" ]; then
+              sed -i.bak '/:_authToken=/d' "$f"
+              sed -i.bak '/always-auth/d' "$f"
+              echo "=== $f ==="
+              cat "$f"
+            fi
+          done
 
       - name: Publish to npm via trusted publisher
         run: npm publish --access public
